@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess AI Review</title>
+    <script src="js/jquery-3.5.1.min.js"></script>
+    <script type="module" src="js/chess-1.0.0.js"></script>
+    <script src="js/stockfish-16.1.js"></script>
+    <script src="js/chessboard2-0.5.0.min.js"></script>
+    <script src="js/chart-4.4.7.min.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <link rel="stylesheet" href="css/chessboard2-0.5.0.css">
+    <link rel="stylesheet" href="css/bootstrap-4.5.2.min.css">
+    <style>
+        body { padding: 20px; }
+        .container { display: flex; }
+        .board-container { flex: 2; }
+        .info-container { flex: 1; display: flex; flex-direction: column; }
+        .explanation-box { flex: 1; border: 1px solid #ccc; padding: 10px; overflow-y: auto; max-height: 400px; }
+        .moves-box { flex: 1; border: 1px solid #ccc; padding: 10px; overflow-y: auto; max-height: 400px; }
+        .controls-box { flex: 0.5; display: flex; justify-content: space-around; padding: 10px; }
+        #pgnInput { width: 100%; padding: 5px; margin-bottom: 10px; }
+        .highlight { background-color: yellow; }
+        .moves-box table tbody td.move:hover:not(.highlight) { cursor: pointer; background-color: #f0f0f0; }
+        .controls-box button {
+            width: 120px;
+            height: 40px;
+            font-size: 16px;
+        }
+        .chessboard-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .rank-labels {
+            position: absolute;
+            left: -20px;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Chess Board -->
+        <div class="board-container">
+            <div class="chessboard-container">
+                <!-- File Labels (Bottom) -->
+                <div class="file-labels">
+                    <span>a</span><span>b</span><span>c</span><span>d</span>
+                    <span>e</span><span>f</span><span>g</span><span>h</span>
+                </div>
+
+                <!-- Rank Labels (Left) -->
+                <div class="rank-labels">
+                    <span>8</span><span>7</span><span>6</span><span>5</span>
+                    <span>4</span><span>3</span><span>2</span><span>1</span>
+                </div>
+
+                <div id="board" style="width: 700px;"></div>
+
+            </div>
+
+            <!-- Graph for evaluation -->
+            <div class="graph-container">
+                <canvas id="evalChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Right Side UI -->
+        <div class="info-container">
+            <!-- Move Explanation -->
+            <textarea id="pgnInput" placeholder="Paste PGN here..."></textarea>
+            <button id="loadPgn" class="btn btn-secondary">Load PGN</button>
+
+            <!-- Move Explanation -->
+            <div class="explanation-box" id="explanation">Move explanation will appear here.</div>
+
+
+            <!-- Move List Table -->
+            <div class="moves-box">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>White</th>
+                            <th>Black</th>
+                        </tr>
+                    </thead>
+                    <tbody id="moves"></tbody>
+                </table>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-box">
+                <button id="firstMove" class="btn btn-secondary">Beginning</button>
+                <button id="prevMove" class="btn btn-primary">Previous</button>
+                <button id="nextMove" class="btn btn-primary">Next</button>
+                <button id="lastMove" class="btn btn-secondary">End</button>
+                <button id="explainMove" class="btn btn-success">Explain</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

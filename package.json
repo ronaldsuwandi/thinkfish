@@ -1,0 +1,17 @@
+{
+  "name": "thinkfish",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --watch --watch-preserve-output src/server.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "openai": "^4.83.0"
+  }
+}
