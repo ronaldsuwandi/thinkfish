@@ -4,7 +4,7 @@ An experimental project combining [Stockfish's](https://stockfishchess.org) calc
 power with LLM-generated explanations to understand chess moves. Built in one day 
 with significant help from [ChatGPT](https://chatgpt.com).
 
-![ThinkFish Logo](img/logo.svg =200x200)
+<img src="img/logo.svg" width="150" height="150" />
 
 ## 💭 Why ThinkFish?
 The name pays tribute to Stockfish while highlighting the goal: adding a 
