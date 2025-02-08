@@ -4,7 +4,7 @@ An experimental project combining [Stockfish's](https://stockfishchess.org) calc
 power with LLM-generated explanations to understand chess moves. Built in one day 
 with significant help from [ChatGPT](https://chatgpt.com).
 
-<img src="img/logo.svg" width="150" height="150" />
+<img alt="ThinkFish logo" src="img/logo.svg" width="150" height="150" />
 
 ## 💭 Why ThinkFish?
 The name pays tribute to Stockfish while highlighting the goal: adding a 
@@ -20,11 +20,11 @@ The name pays tribute to Stockfish while highlighting the goal: adding a
 ## 🚧 Key Findings & Limitations
 This prototype revealed interesting challenges in using LLMs for chess analysis:
 
-- 🤖 **LLMs often hallucinate explanations**, even with correct move sequences.  
-- ⚠️ **Generated continuations frequently include illegal moves, misinterpreting board positions.** Even after abandoning LLM-generated move sequences and using **Stockfish's own continuations**, the LLM still struggled to explain moves correctly without hallucinating.  
-- 🧮 **While chess engines excel at calculations, converting their output to human reasoning remains challenging.**  
-- 🔍 **Structured rule-based logic is difficult for LLMs**, making them unreliable for precise chess explanations.  
-- 📉 **Tried both GPT-4o and GPT-4o-mini** for move explanations—**GPT-4o performed better but still generated a significant number of incorrect explanations.**  
+- **LLMs often hallucinate explanations**, even with correct move sequences.  
+- **Generated continuations frequently include illegal moves, misinterpreting board positions.** Even after abandoning LLM-generated move sequences and using **Stockfish's own continuations**, the LLM still struggled to explain moves correctly without hallucinating.  
+- **While chess engines excel at calculations, converting their output to human reasoning remains challenging.**  
+- **Structured rule-based logic is difficult for LLMs**, making them unreliable for precise chess explanations.  
+- **Tried both GPT-4o and GPT-4o-mini** for move explanations—**GPT-4o performed better but still generated a significant number of incorrect explanations.**  
 
 ## 📷 Model Performance Comparison
 While testing **GPT-4o and GPT-4o-mini**, both models struggled with **accurate 
