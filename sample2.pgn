@@ -1,0 +1,32 @@
+[Event "Live Chess"]
+[Site "Chess.com"]
+[Date "2025.02.16"]
+[Round "-"]
+[White "gantengx15"]
+[Black "hamdanmalek"]
+[Result "1-0"]
+[CurrentPosition "r1b2R1k/pp1pN1pp/7q/2r1n3/7P/3Q2P1/4N3/R5K1 b - -"]
+[Timezone "UTC"]
+[ECO "A00"]
+[ECOUrl "https://www.chess.com/openings/Polish-Opening-1...e5-2.Bb2"]
+[UTCDate "2025.02.16"]
+[UTCTime "04:35:29"]
+[WhiteElo "986"]
+[BlackElo "965"]
+[TimeControl "600"]
+[Termination "gantengx15 won by checkmate"]
+[StartTime "04:35:29"]
+[EndDate "2025.02.16"]
+[EndTime "04:47:45"]
+[Link "https://www.chess.com/analysis/game/live/122935513590?tab=analysis"]
+[WhiteUrl "https://images.chesscomfiles.com/uploads/v1/user/304655469.687cf014.50x50o.814f4703ea7d.jpg"]
+[WhiteCountry "125"]
+[WhiteTitle ""]
+[BlackUrl "https://images.chesscomfiles.com/uploads/v1/user/180702653.870eb20e.50x50o.bfcd2e9fd8cc.jpeg"]
+[BlackCountry "142"]
+[BlackTitle ""]
+
+1. b4 e5 2. Bb2 Qf6 3. c4 Na6 4. a3 Bd6 5. Nf3 c5 6. e4 cxb4 7. axb4 Bxb4 8. Bc3
+Nh6 9. c5 Bxc3 10. Nxc3 Nxc5 11. d4 exd4 12. Nxd4 O-O 13. Nd5 Qd6 14. Bc4 Re8
+15. f3 Nxe4 16. fxe4 Rxe4+ 17. Ne2 Rxc4 18. Qd3 Rc6 19. O-O Ng4 20. g3 Qh6 21.
+h4 Rc5 22. Ne7+ Kh8 23. Rxf7 Ne5 24. Rf8# 1-0

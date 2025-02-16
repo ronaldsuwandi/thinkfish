@@ -101,6 +101,8 @@ function analyzeFullGameBatch() {
     }
     game.reset();
 
+    console.log(positions.length);
+
     // FIXME highlight after eval are all done
 
     highlightActiveMove();
@@ -114,16 +116,25 @@ function analyzeFullGameBatch() {
 evaler.onmessage = function (event) {
     if (event.data.includes("Final evaluation")) {
         const match = event.data.match(/Final evaluation\s+([+-]?\d+\.?\d*)/);
+        const noneMatch = event.data.match(/Final evaluation:\s+none*/);
         console.log(event.data);
+        let evalScore = 0.0;
+
         if (match) {
-            let evalScore = parseFloat(match[1]);
+            evalScore = parseFloat(match[1]);
             evalScore = Math.max(-8, Math.min(8, evalScore));
-            evalHistory.push(evalScore);
-            evalChart.data.labels.push(lastEval + 1);
-            evalChart.data.datasets[0].data.push(evalScore);
-            evalChart.update();
-            lastEval++;
+        } else if (noneMatch) {
+            // for check final eval returns none, use previous score if available
+            if (evalHistory.length > 0) {
+                evalScore = evalHistory[evalHistory.length - 1];
+            }
         }
+
+        evalHistory.push(evalScore);
+        evalChart.data.labels.push(lastEval + 1);
+        evalChart.data.datasets[0].data.push(evalScore);
+        evalChart.update();
+        lastEval++;
     }
 };
 
@@ -244,7 +255,7 @@ function highlightActiveMove() {
 
 function analyzePosition() {
     stockfish.postMessage(`position fen ${game.fen()}`);
-    stockfish.postMessage('go depth 15');
+    stockfish.postMessage('go depth 20');
 }
 
 let bestMoveUCI;
@@ -252,7 +263,7 @@ let bestMoveUCI;
 let bestMoveSequence = [];
 
 stockfish.onmessage = function (event) {
-    if (event.data.startsWith('info depth 15')) {
+    if (event.data.startsWith('info depth 20')) {
         bestMoveSequence = event.data.split(" pv ")[1].split(" ");
     }
     if (event.data.startsWith('bestmove')) {
@@ -301,7 +312,94 @@ async function fetchWithTimeout(url, options, timeout = 15000) {
 
 // Add loading indicator to the Explain button
 const explainButton = document.getElementById('explainMove');
+const reviewButton = document.getElementById('overallReview');
+const reviewWhiteButton = document.getElementById('whiteReview');
+const reviewBlackButton = document.getElementById('blackReview');
 const explanationBox = document.getElementById('explanation');
+
+const llmButtons = [explainButton, reviewWhiteButton, reviewBlackButton, reviewButton];
+
+explainButton.dataset.originalText = 'Explain';
+reviewButton.dataset.originalText = 'Overall Review';
+reviewWhiteButton.dataset.originalText = 'White Review';
+reviewBlackButton.dataset.originalText = 'Black Review';
+
+const explainCallback = async (reviewType) => {
+    let reviewTypeText;
+    if (reviewType === 'overall') {
+        reviewTypeText = 'Overall';
+    } else if (reviewType === 'white') {
+        reviewTypeText = 'White';
+    } else if (reviewType === 'black') {
+        reviewTypeText = 'Black';
+    }
+
+    if (moves.length === 0) {
+        alert('No moves to review');
+        return;
+    }
+
+    try {
+        // Show loading state
+        enableLLMButtons(false);
+
+        const body = [];
+        for (let i=0;i<moves.length;i++) {
+            body.push({
+                pgn: moves[i].san,
+                before_fen: moves[i].before,
+                after_fen: moves[i].after,
+                evalScore: evalHistory[i+1],
+            })
+        }
+
+        const response = await fetchWithTimeout('/api/review', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reviewType,
+                moves: body,
+            })
+        }, 45000);
+
+        console.dir(response)
+        if (!response.ok) {
+            throw new Error('Failed to get explanation');
+        }
+
+        const data = await response.json();
+        let explanationHtml = `<strong>${reviewTypeText} Review:</strong><br>${data.explanation.replaceAll('\n', '<br>')}<br><br>`;
+
+        explanationBox.innerHTML = explanationHtml;
+    } catch (error) {
+        console.error('Error fetching explanation:', error);
+        enableLLMButtons(true);
+        explanationBox.innerText = `Failed to get explanation`;
+    } finally {
+        enableLLMButtons(true);
+    }
+}
+
+reviewButton.addEventListener('click', async (event) => {
+    await explainCallback('overall');
+});
+reviewWhiteButton.addEventListener('click', async (event) => {
+    await explainCallback('white');
+});
+reviewBlackButton.addEventListener('click', async (event) => {
+    await explainCallback('black');
+});
+
+const enableLLMButtons = (enable) => {
+    for (let btn of llmButtons) {
+        btn.disabled = !enable;
+        if (!enable) {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Explaining...';
+        } else {
+            btn.innerHTML = btn.dataset.originalText;
+        }
+    }
+}
 
 explainButton.addEventListener('click', async () => {
     if (!bestMoveUCI || bestMoveUCI == '(none)') {
@@ -335,12 +433,8 @@ explainButton.addEventListener('click', async () => {
 
 
     try {
-
         // Show loading state
-        explainButton.disabled = true;
-        explainButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Explaining...';
-        explanationBox.innerText = 'Analyzing move...';
-
+        enableLLMButtons(false);
         const response = await fetchWithTimeout('/api/explain-move', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -375,11 +469,9 @@ explainButton.addEventListener('click', async () => {
         explanationBox.innerHTML = explanationHtml;
     } catch (error) {
         console.error('Error fetching explanation:', error);
-        explainButton.disabled = false;
-        explainButton.innerText = 'Explain';
+        enableLLMButtons(true);
         explanationBox.innerText = `Failed to get explanation`;
     } finally {
-        explainButton.disabled = false;
-        explainButton.innerText = 'Explain';
+        enableLLMButtons(true);
     }
 });

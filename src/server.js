@@ -23,7 +23,6 @@ app.use((req, res, next) => {
 // app.use(express.static(path.join(__dirname, 'public/')));
 app.use(express.static('public'));
 
-// Dummy LLM API Endpoint
 app.post('/api/explain-move', async (req, res) => {
     const { fen, move, bestMove, continuation } = req.body;
 
@@ -151,6 +150,106 @@ Only give UP TO MAXIMUM 8 moves from the possible continuation
 
     try {
         console.log('Sending request to OpenAI');
+        console.dir(JSON.parse(userPrompt));
+        const stream = await openai.chat.completions.create({
+            // model: "gpt-4o",
+            model: "gpt-4o-mini",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+            ],
+            temperature: 0.3,
+            stream: true,
+        });
+
+        let responseChunks = [];
+        for await (const chunk of stream) {
+            const text = chunk.choices[0]?.delta?.content;
+            if (text) {
+                responseChunks.push(text);
+                process.stdout.write(text); // Debugging
+            }
+        }
+        console.log("\n--- Streaming complete ---");
+
+        // Combine all chunks into a single string and parse as JSON
+        const fullResponse = responseChunks.join(""); // Ensure valid JSON
+        const parsedJson = JSON.parse(fullResponse);
+
+        return res.json(parsedJson); // Send clean JSON to frontend
+
+    } catch (error) {
+        console.error('Error fetching explanation:', error);
+        return res.status(500).json({ error: 'Failed to generate explanation' });
+    }
+});
+
+app.post('/api/review', async (req, res) => {
+    const { reviewType, moves } = req.body;
+
+    if (!reviewType || !moves) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    console.log("Received request:", { reviewType, moves });  // Log request
+
+    let systemPrompt = `You are a grandmaster-level chess analyst. Your job is to review the chess game.
+
+INPUT
+User will provide a JSON object:
+{
+    "moves": [{
+        "pgn": "[PGN move played]",
+        "before_fen": "[FEN before move]",
+        "after_fen": "[FEN after move]",
+        "evalScore": "[Eval score between -8.0 to 8.0 (negative means is strong for black, positive means strong for white)]"
+    }, ...],
+}
+
+OUTPUT
+Your response must be valid JSON. Send it in plain text format without markdown. Explanation of the game can be split using new line
+
+{
+    "explanation": "[Explanation of the game. In normal text, not formatted]",
+}
+
+`.trim();
+
+    if (reviewType === 'overall') {
+        systemPrompt += `
+IMPORTANT NOTE
+You are to give an overall review of the game, provide a balanced view between white and black. Explain how was 
+the overall game perform, what are the major blunders and great moves. What are the gaps between both players and 
+how can both players improve
+
+Give the feedback in terms of beginning, middle and end game how it all went out
+
+For example: white misses out an immediate checkmate or black blundered with the move causing the player to 
+lose advantage significantly. Black could have improved by better position at step 12
+`.trim()
+    } else if (reviewType === 'white' || reviewType === 'black') {
+        systemPrompt += `
+IMPORTANT NOTE
+You are to give an overall review of the game, but you are focusing on ${reviewType} player. Explain how was 
+the game perform from ${reviewType} perspective, what are the major blunders and great moves. What are the gaps
+and how could ${reviewType} improve the game
+
+Give the feedback in terms of beginning, middle and end game how it all went out
+
+For example: ${reviewType} misses out an immediate checkmate or ${reviewType} blundered with the move causing the player to 
+lose advantage significantly. ${reviewType} could have improved by better position at step 12
+`
+    } else {
+        return res.status(400).json({error: 'Invalid review type: ' + reviewType})
+    }
+
+    const userPrompt = JSON.stringify({
+        moves
+    });
+
+    try {
+        console.log('Sending request to OpenAI');
+        console.dir(JSON.parse(userPrompt));
         const stream = await openai.chat.completions.create({
             model: "gpt-4o",
             // model: "gpt-4o-mini",
@@ -183,7 +282,6 @@ Only give UP TO MAXIMUM 8 moves from the possible continuation
         return res.status(500).json({ error: 'Failed to generate explanation' });
     }
 });
-
 
 
 

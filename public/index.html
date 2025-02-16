@@ -20,10 +20,13 @@
         .explanation-box { flex: 1; border: 1px solid #ccc; padding: 10px; overflow-y: auto; max-height: 400px; }
         .moves-box { flex: 1; border: 1px solid #ccc; padding: 10px; overflow-y: auto; max-height: 400px; }
         .controls-box { flex: 0.5; display: flex; justify-content: space-around; padding: 10px; }
+        .review-controls { flex: 0; display: flex; justify-content: space-between; padding: 10px; }
         #pgnInput { width: 100%; padding: 5px; margin-bottom: 10px; }
         .highlight { background-color: yellow; }
         .moves-box table tbody td.move:hover:not(.highlight) { cursor: pointer; background-color: #f0f0f0; }
-        .controls-box button {
+
+        .controls-box button,
+        .review-control button {
             width: 120px;
             height: 40px;
             font-size: 16px;
@@ -89,7 +92,7 @@
             <button id="loadPgn" class="btn btn-secondary">Load PGN</button>
 
             <!-- Move Explanation -->
-            <div class="explanation-box" id="explanation">Move explanation will appear here.</div>
+            <div class="explanation-box" id="explanation">Move explanation or game review will appear here.</div>
 
 
             <!-- Move List Table -->
@@ -107,6 +110,12 @@
             </div>
 
             <!-- Controls -->
+            <div class="review-controls">
+                <button id="overallReview" class="btn btn-info">Overall Review</button>
+                <button id="whiteReview" class="btn btn-info">White Review</button>
+                <button id="blackReview" class="btn btn-info">Black Review</button>
+            </div>
+
             <div class="controls-box">
                 <button id="firstMove" class="btn btn-secondary">Beginning</button>
                 <button id="prevMove" class="btn btn-primary">Previous</button>
