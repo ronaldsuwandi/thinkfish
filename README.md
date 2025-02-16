@@ -42,7 +42,7 @@ reduce hallucinations and improved explanation accuracy, especially for
 
 Additionally, a new **game review feature** has been introduced, summarizing 
 performance from three perspective:
-- Overall game review: general analysis of game's key moements
+- Overall game review: general analysis of game's key movements
 - White's game review: focuses on white's performance, strengths and missed opportunities
 - Black's game review: focuses on black's performance, strengths and missed opportunities
 
@@ -54,6 +54,14 @@ performance from three perspective:
 
 ![GPT-4o](img/4o_review_white.png)
 This provide pretty solid review. No issue so far
+</details>
+
+<details>
+<summary>Details for Black Review</summary>
+
+![GPT-4o](img/4o_review_black.png)
+Hallucination spotted: Black's final move 24..Rf8# which does not make sense 
+because it was White's move that checkmated Black. But overall still solid review
 </details>
 
 <details>
@@ -151,12 +159,12 @@ Hallucinations spotted:
 
 ## 🚀 Quick Start
 ```bash
-# Install dependencies
-npm install
-
 # Clone the repo
 git clone https://github.com/yourgithub/thinkfish.git
 cd thinkfish
+
+# Install dependencies
+npm install
 
 # Create .env file
 touch .env

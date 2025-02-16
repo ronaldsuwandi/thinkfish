@@ -342,6 +342,7 @@ const explainCallback = async (reviewType) => {
     try {
         // Show loading state
         enableLLMButtons(false);
+        explanationBox.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Explaining...';
 
         const body = [];
         for (let i=0;i<moves.length;i++) {
@@ -435,6 +436,7 @@ explainButton.addEventListener('click', async () => {
     try {
         // Show loading state
         enableLLMButtons(false);
+        explanationBox.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Explaining...';
         const response = await fetchWithTimeout('/api/explain-move', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

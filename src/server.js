@@ -152,8 +152,8 @@ Only give UP TO MAXIMUM 8 moves from the possible continuation
         console.log('Sending request to OpenAI');
         console.dir(JSON.parse(userPrompt));
         const stream = await openai.chat.completions.create({
-            // model: "gpt-4o",
-            model: "gpt-4o-mini",
+            model: "gpt-4o",
+            // model: "gpt-4o-mini",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }
@@ -222,9 +222,13 @@ You are to give an overall review of the game, provide a balanced view between w
 the overall game perform, what are the major blunders and great moves. What are the gaps between both players and 
 how can both players improve
 
-Give the feedback in terms of beginning, middle and end game how it all went out
+Pay special attention to when the evalScore change significantly (major blunder or great move). Use this as reference 
+for your reasoning but you do NOT need to include it in the explanation unless it's a really major change
 
-Pay special attention to when the evalScore change significantly (major blunder or great move)
+Highlight the explanation by multiple sections, beginning, middle and end game (tactics and executions) 
+as well as key moments, missed opportunities and areas to improve on
+
+Highlight what went well and what could have been improved for each player. It is important for the player to understand
 
 For example: white misses out an immediate checkmate or black blundered with the move causing the player to 
 lose advantage significantly and lose control of the center. Black could have improved by better position at step 12
@@ -236,9 +240,14 @@ You are to give an overall review of the game, but you are focusing on ${reviewT
 the game perform from ${reviewType} perspective, what are the major blunders and great moves. What are the gaps
 and how could ${reviewType} improve the game
 
-Give the feedback in terms of beginning, middle and end game how it all went out
+Pay special attention to when the evalScore change significantly (major blunder or great move). Use this as reference 
+for your reasoning but you do NOT need to include it in the explanation unless it's a really major change
 
-Pay special attention to when the evalScore change significantly (major blunder or great move)
+Highlight the explanation by multiple sections, beginning, middle and end game (tactics and executions) 
+as well as key moments, missed opportunities and areas to improve on
+
+Regardless if ${reviewType} won or lost, highlight what went well and what could have been improved. It is important
+for the player to understand
 
 For example: ${reviewType} misses out an immediate checkmate or ${reviewType} blundered with the move causing the player to 
 lose advantage significantly and lose control of the center. ${reviewType} could have improved by better position at step 12
@@ -255,8 +264,8 @@ lose advantage significantly and lose control of the center. ${reviewType} could
         console.log('Sending request to OpenAI');
         console.dir(JSON.parse(userPrompt));
         const stream = await openai.chat.completions.create({
-            model: "gpt-4o",
-            // model: "gpt-4o-mini",
+            // model: "gpt-4o",
+            model: "gpt-4o-mini",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }
