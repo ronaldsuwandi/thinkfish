@@ -16,26 +16,95 @@ The name pays tribute to Stockfish while highlighting the goal: adding a
 ✅ Converts move notation (UCI ↔ PGN) for clarity  
 ✅ Uses an LLM to attempt human-like move explanations  
 ✅ Processes position evaluations for better insights  
+✅ Provides overall, white, and black game reviews to summarize 
+key moments and performance (updated 2024-02-16)
 
 ## 🚧 Key Findings & Limitations
-This prototype revealed interesting challenges in using LLMs for chess analysis:
+This prototype revealed interesting challenges in using LLMs for chess analysis. 
+However, a **recent tweak** significantly improved results:
+- **Before/After FEN improves accuracy**. Providing FEN state before and after 
+  each move helps LLM better understand the board changes, leading to fewer 
+  hallucinations
+- **Hallucinations still exists but are less severe.** Even with this 
+  improvement, LLM can still misinterpret board states, but the errors are now 
+  smaller and less game-breaking.
+- **GPT-4o sees the biggest improvement.** The updated prompt works best with 
+  GPT-4o, while GPT-4o-mini still struggles despite the change
+- **This remains an AI limitation.** While the results are better, LLMs can 
+  still make mistakes making them not very reliable for precise chess 
+  explanations
 
-- **LLMs often hallucinate explanations**, even with correct move sequences.  
-- **Generated continuations frequently include illegal moves, misinterpreting board positions.** Even after abandoning LLM-generated move sequences and using **Stockfish's own continuations**, the LLM still struggled to explain moves correctly without hallucinating.  
-- **While chess engines excel at calculations, converting their output to human reasoning remains challenging.**  
-- **Structured rule-based logic is difficult for LLMs**, making them unreliable for precise chess explanations.  
-- **Tried both GPT-4o and GPT-4o-mini** for move explanations—**GPT-4o performed better but still generated a significant number of incorrect explanations.**  
+## 📈 Main Improvement: Before/After FEN (2024-02-16)
+The biggest improvement came from **modifying the prompt to include board state 
+before and after each move using FEN notation.** This additional context helped 
+reduce hallucinations and improved explanation accuracy, especially for 
+**GPT-4o**. However models like **GPT-4o-mini** still struggled with consistency
+
+Additionally, a new **game review feature** has been introduced, summarizing 
+performance from three perspective:
+- Overall game review: general analysis of game's key moements
+- White's game review: focuses on white's performance, strengths and missed opportunities
+- Black's game review: focuses on black's performance, strengths and missed opportunities
 
 ## 📷 Model Performance Comparison
-While testing **GPT-4o and GPT-4o-mini**, both models struggled with **accurate 
-move explanations**, even when using **Stockfish’s own continuations** instead 
-of LLM-generated moves.
 
-### GPT-4o (Better but still flawed)  
+### GPT-4o (Updated prompt)
+<details>
+<summary>Details for White Review</summary>
+
+![GPT-4o](img/4o_review_white.png)
+This provide pretty solid review. No issue so far
+</details>
+
 <details>
 <summary>Details</summary>
 
 ![GPT-4o](img/4o_1.png)
+Provides pretty solid explanation why Stockfish recommended black to g6 but 
+it fails to explain that the importance of that move because without moving g6 
+white ended up winning the game through backrank check
+
+![GPT-4o](img/4o_2.png)
+Solid explanation on the moves however there is a hallucination spotted. By 
+putting white Bb5 move, it essentially restrict black's a5 knight. The 
+explanation from LLM was it's pinning knight on c6. There is no knight at c6 
+but it should have explain that a5 knight will not be able to move to c6
+because of white bishop at b5 
+
+</details>
+
+### GPT-4o-mini (Updated prompt, still hallucinates)
+<details>
+<summary>Details for White Review</summary>
+
+![GPT-4o](img/4o-mini_review_white.png)
+Also solid review for the white but the highlighted text shows inconsistencies.
+White's overall performance at the end game wasn't the best but managed to 
+do a checkmate due to Black's blunder but the description from the LLM 
+indicated that it's too late for White to change the outcome which does not 
+make sense.
+</details>
+
+<details>
+<summary>Details</summary>
+
+![GPT-4o](img/4o-mini.png)
+Hallucination spotted
+- The wording is confusing, it's black's turn yet it's stating that there was 
+  a threat by black queen on h4
+- It also failed to mention that playing g6 will prevent the backrank checkmate
+</details>
+
+### Older prompt
+This applies for the older prompt: while testing **GPT-4o and GPT-4o-mini**, 
+both models struggled with **accurate move explanations**, even when using 
+**Stockfish’s own continuations** instead of LLM-generated moves.
+
+#### GPT-4o (Better but still flawed), before prompt update
+<details>
+<summary>Details</summary>
+
+![GPT-4o](img/old_4o_1.png)
 Hallucinations spotted
 
 - From move explanation: claimed rook on f8 but it is actually white bishop
@@ -44,7 +113,7 @@ Hallucinations spotted
   path for white queen to attack black queen and at the same time black queen
   is still protected by rook on a8
 
-![GPT-4o](img/4o_2.png)
+![GPT-4o](img/old_4o_2.png)
 Hallucinations spotted
 
 - From move explanation: claimed that by following best move (white Bb5) it can
@@ -58,11 +127,11 @@ Hallucinations spotted
 
 </details>
 
-### GPT-4o-mini (More hallucinations, worse accuracy)
+### GPT-4o-mini (More hallucinations, worse accuracy), before prompt update
 <details>
 <summary>Details</summary>
 
-![GPT-4o-mini](img/4o-mini.png)
+![GPT-4o-mini](img/old_4o-mini.png)
 
 Hallucinations spotted: 
 
@@ -100,23 +169,12 @@ node start
 ```
 
 Visit http://localhost:3000 to use the web app, and load a PGN file for
-testing (e.g., `sample.pgn` is provided as a reference).
+testing (e.g., `sample.pgn` and `sample2.pgn` is provided as a reference).
 
 ## 🛑 Project Status
-This was built **as a rapid prototype** in a single day. While the integration 
-of **Stockfish + LLM** was successful, the fundamental challenges with LLM-based 
-chess explanations make this approach impractical for serious chess analysis. 
-**LLMs frequently hallucinate moves, misinterpret board states, and struggle 
-with structured logic.** Even when relying on **Stockfish's own continuations 
-instead of LLM-generated moves**, explanations were still frequently incorrect
-
-After testing both **GPT-4o and GPT-4o-mini**, it became clear that while 
-**GPT-4o performed better, it still produced many invalid explanations**, 
-making LLMs unreliable for structured rule-based chess analysis.
-
-As a result, there are **no plans for further development**. However, this 
-remains an interesting exploration of AI limitations in structured domains 
-like chess.
+This remains a prototype, and while the prompt update significantly improved 
+results, LLM-based chess explanations still have fundamental limitations. 
+**There are no plans for further development at this time**
 
 ## 🤝 Contributing
 This remains a **prototype**, and while I won’t be actively maintaining it, 

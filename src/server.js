@@ -224,8 +224,10 @@ how can both players improve
 
 Give the feedback in terms of beginning, middle and end game how it all went out
 
+Pay special attention to when the evalScore change significantly (major blunder or great move)
+
 For example: white misses out an immediate checkmate or black blundered with the move causing the player to 
-lose advantage significantly. Black could have improved by better position at step 12
+lose advantage significantly and lose control of the center. Black could have improved by better position at step 12
 `.trim()
     } else if (reviewType === 'white' || reviewType === 'black') {
         systemPrompt += `
@@ -236,8 +238,10 @@ and how could ${reviewType} improve the game
 
 Give the feedback in terms of beginning, middle and end game how it all went out
 
+Pay special attention to when the evalScore change significantly (major blunder or great move)
+
 For example: ${reviewType} misses out an immediate checkmate or ${reviewType} blundered with the move causing the player to 
-lose advantage significantly. ${reviewType} could have improved by better position at step 12
+lose advantage significantly and lose control of the center. ${reviewType} could have improved by better position at step 12
 `
     } else {
         return res.status(400).json({error: 'Invalid review type: ' + reviewType})
