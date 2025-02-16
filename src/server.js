@@ -77,8 +77,8 @@ app.post('/api/explain-move', async (req, res) => {
     //         ]
     //     }
     //
-    //     Only give UP TO MAXIMUM 2 possible continuation from the best move. For EACH continuation go
-    //     UP to 5 DEPTHS (5 moves)
+    //     Only give UP TO MAXIMUM 1 possible continuation from the best move. For EACH continuation go
+    //     UP to 8 DEPTHS (8 moves)
     //
     //     VERY IMPORTANT
     //     Possible continuations AND explanations MUST BE VALID based on the
@@ -96,28 +96,54 @@ app.post('/api/explain-move', async (req, res) => {
 INPUT
 User will provide a JSON object:
 {
-    "fen": "[FEN position]",
     "color": "[white or black indicated by w or b]",
-    "move": "[PGN move played]",
-    "bestMove": "[Best move in PGN]",
-    "continuation": ["Nc4", "Qf4", "d5", "exd5", "cxd5"],
+    "move": {
+        "pgn": "[PGN move played]",
+        "before_fen": "[FEN before move]",
+        "after_fen": "[FEN after move]",
+    }
+    "bestMove": {
+        "pgn": "[Best move in PGN]",
+        "before_fen": "[FEN before move]",
+        "after_fen": "[FEN after move]",
+    }
+    "continuation": [{
+        "pgn": "Nc4",
+        "before_fen": "[FEN before move]",
+        "after_fen": "[FEN after move]",
+    }, {
+        "pgn": "Qf4",
+        "before_fen": "[FEN before move]",
+        "after_fen": "[FEN after move]",
+    }, {
+        "pgn": "d5",
+        "before_fen": "[FEN before move]",
+        "after_fen": "[FEN after move]",
+    }],
 }
 
 OUTPUT
 Your response must be valid JSON. Send it in plain text format without markdown
+
+Only give UP TO MAXIMUM 8 moves from the possible continuation
+
 {
     "explanation": "[Explain the move]",
     "continuations": [
         { "move": "Nc4", "color": "black", "reason": "Moves the knight to attack White's bishop and increase control over the center." },
         { "move": "Qf4", "color": "white", "reason": "White moves the queen to safety while maintaining pressure." }
+        ... (MAXIMUM of 8 MOVES)        
     ]
 }
-    
 `.trim();
 
     const userPrompt = JSON.stringify({
         fen,
-        move: move.san,
+        move: {
+            pgn: move.san,
+            before_fen: move.before,
+            after_fen: move.after,
+        },
         color: move.color,
         bestMove,
         continuation,
@@ -126,7 +152,8 @@ Your response must be valid JSON. Send it in plain text format without markdown
     try {
         console.log('Sending request to OpenAI');
         const stream = await openai.chat.completions.create({
-            model: "gpt-4o", // "gpt-4o-mini"
+            model: "gpt-4o",
+            // model: "gpt-4o-mini",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }

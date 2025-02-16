@@ -173,8 +173,12 @@ function renderMoveList() {
         tr.innerHTML = `
             <td>${Math.floor(i / 2) + 1}</td>
             <td class="move" data-index="${i}">${moves[i].san || ''}</td>
-            <td class="move" data-index="${i + 1}">${moves[i + 1].san || ''}</td>
         `;
+
+        if (i < moves.length -1) {
+            tr.innerHTML += `<td class="move" data-index="${i + 1}">${moves[i + 1].san || ''}</td>`;
+        }
+
         tbody.appendChild(tr);
     }
 
@@ -313,11 +317,14 @@ explainButton.addEventListener('click', async () => {
     let bestMovesPgn = []
 
     let dummy = new Chess(fen);
-
     for (let uciMove of bestMoveSequence) {
         const move = dummy.move({ from: uciMove.substring(0, 2), to: uciMove.substring(2, 4), promotion: "q" });
         if (move) {
-            bestMovesPgn.push(move.san); // Store PGN notation (SAN = Standard Algebraic Notation)
+            bestMovesPgn.push({
+                pgn: move.san,
+                before_fen: move.before,
+                after_fen: move.after,
+            }); // Store PGN notation (SAN = Standard Algebraic Notation)
         } else {
             console.warn(`Invalid move: ${uciMove} in position: ${dummy.fen()}`);
             break;
