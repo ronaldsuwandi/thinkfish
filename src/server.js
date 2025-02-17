@@ -227,13 +227,18 @@ You are to give an overall review of the game, provide a balanced view between w
 the overall game perform, what are the major blunders and great moves. What are the gaps between both players and 
 how can both players improve
 
-Pay special attention to when the evalScore change significantly (major blunder or great move). Use this as reference 
-for your reasoning but you do NOT need to include it in the explanation unless it's a really major change
-
 Highlight the explanation by multiple sections, beginning, middle and end game (tactics and executions) 
 as well as key moments, missed opportunities and areas to improve on
 
-Highlight what went well and what could have been improved for each player. It is important for the player to understand
+For each section focus on the strengths, weaknesses and key turning points
+
+Highlight how well both players transition to middlegame, any key positional or tactical moments stood out
+
+Are there any missed opportunities to secure a win or hold a draw? Identify key lesson for improvement
+
+Pay special attention to when the evalScore change significantly (major blunder or great move). Use this as reference 
+for your reasoning but you do NOT need to include it in the explanation unless it's a really major change. Do highlight most 
+critical blunders or brilliant moves made by both players and explain their impact
 
 For example: white misses out an immediate checkmate or black blundered with the move causing the player to 
 lose advantage significantly and lose control of the center. Black could have improved by better position at step 12
@@ -245,14 +250,21 @@ You are to give an overall review of the game, but you are focusing on ${reviewT
 the game perform from ${reviewType} perspective, what are the major blunders and great moves. What are the gaps
 and how could ${reviewType} improve the game
 
-Pay special attention to when the evalScore change significantly (major blunder or great move). Use this as reference 
-for your reasoning but you do NOT need to include it in the explanation unless it's a really major change
-
 Highlight the explanation by multiple sections, beginning, middle and end game (tactics and executions) 
 as well as key moments, missed opportunities and areas to improve on
 
 Regardless if ${reviewType} won or lost, highlight what went well and what could have been improved. It is important
 for the player to understand
+
+For each section focus on the strengths, weaknesses and key turning points
+
+Highlight how well ${reviewType} transition to middlegame, any key positional or tactical moments stood out
+
+Are there any missed opportunities to secure a win or hold a draw? Identify key lesson for improvement
+
+Pay special attention to when the evalScore change significantly (major blunder or great move). Use this as reference 
+for your reasoning but you do NOT need to include it in the explanation unless it's a really major change. Do highlight most 
+critical blunders or brilliant moves made by ${reviewType} and explain their impact
 
 For example: ${reviewType} misses out an immediate checkmate or ${reviewType} blundered with the move causing the player to 
 lose advantage significantly and lose control of the center. ${reviewType} could have improved by better position at step 12

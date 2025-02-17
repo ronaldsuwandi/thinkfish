@@ -430,7 +430,7 @@ const explainCallback = async (reviewType) => {
                 model: getModel(),
                 additionalContext: additionalContext.value,
             })
-        }, 45000);
+        }, 120000);
 
         console.dir(response)
         if (!response.ok) {
