@@ -196,7 +196,29 @@ app.post('/api/review', async (req, res) => {
 
     console.log("Received request:", { reviewType, moves });  // Log request
 
-    let systemPrompt = '';
+    let systemPrompt = `You are a grandmaster-level chess analyst. Your job is to review the chess game.
+
+INPUT
+User will provide a JSON object:
+{
+    "additionalContext": "[optional additional context provided regarding the game]",
+    "moves": [{
+        "pgn": "[PGN move played]",
+        "before_fen": "[FEN before move]",
+        "after_fen": "[FEN after move]",
+        "evalScore": "[Eval score between -8.0 to 8.0 (negative means is strong for black, positive means strong for white)]"
+        "mate": "[negative if opponent has forced checkmate in X plies turn, positive if current player has forced checkmate in X plies turn, 0 if no mate is detected]          
+    }, ...],
+}
+
+OUTPUT
+Your response must be valid JSON. Send it in plain text format without markdown. Explanation of the game can be split using new line
+
+{
+    "explanation": "[Explanation of the game. In normal text, not formatted]",
+}
+
+`.trim();
 
     if (reviewType === 'overall') {
         systemPrompt += `
