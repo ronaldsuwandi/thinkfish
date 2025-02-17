@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 app.use(express.static('public'));
 
 app.post('/api/explain-move', async (req, res) => {
-    const { fen, move, bestMove, continuation } = req.body;
+    const { model, mate, fen, move, bestMove, continuation, additionalContext } = req.body;
 
     if (!fen || !move || !bestMove) {
         return res.status(400).json({ error: 'Missing required parameters' });
@@ -95,7 +95,9 @@ app.post('/api/explain-move', async (req, res) => {
 INPUT
 User will provide a JSON object:
 {
+    "additionalContext": "[optional additional context provided regarding the game]",
     "color": "[white or black indicated by w or b]",
+    "mate": "[negative if opponent has forced checkmate in X plies turn, positive if current player has forced checkmate in X plies turn, 0 if no mate is detected] 
     "move": {
         "pgn": "[PGN move played]",
         "before_fen": "[FEN before move]",
@@ -142,18 +144,19 @@ Only give UP TO MAXIMUM 8 moves from the possible continuation
             pgn: move.san,
             before_fen: move.before,
             after_fen: move.after,
+            mate,
         },
         color: move.color,
         bestMove,
         continuation,
+        additionalContext
     });
 
     try {
         console.log('Sending request to OpenAI');
         console.dir(JSON.parse(userPrompt));
         const stream = await openai.chat.completions.create({
-            model: "gpt-4o",
-            // model: "gpt-4o-mini",
+            model: model || "gpt-4o-mini",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }
@@ -185,7 +188,7 @@ Only give UP TO MAXIMUM 8 moves from the possible continuation
 });
 
 app.post('/api/review', async (req, res) => {
-    const { reviewType, moves } = req.body;
+    const { reviewType, moves, model, additionalContext } = req.body;
 
     if (!reviewType || !moves) {
         return res.status(400).json({ error: 'Missing required parameters' });
@@ -198,11 +201,13 @@ app.post('/api/review', async (req, res) => {
 INPUT
 User will provide a JSON object:
 {
+    "additionalContext": "[optional additional context provided regarding the game]",
     "moves": [{
         "pgn": "[PGN move played]",
         "before_fen": "[FEN before move]",
         "after_fen": "[FEN after move]",
         "evalScore": "[Eval score between -8.0 to 8.0 (negative means is strong for black, positive means strong for white)]"
+        "mate": "[negative if opponent has forced checkmate in X plies turn, positive if current player has forced checkmate in X plies turn, 0 if no mate is detected]          
     }, ...],
 }
 
@@ -257,15 +262,15 @@ lose advantage significantly and lose control of the center. ${reviewType} could
     }
 
     const userPrompt = JSON.stringify({
-        moves
+        moves,
+        additionalContext
     });
 
     try {
         console.log('Sending request to OpenAI');
         console.dir(JSON.parse(userPrompt));
         const stream = await openai.chat.completions.create({
-            // model: "gpt-4o",
-            model: "gpt-4o-mini",
+            model: model || "gpt-4o-mini",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }

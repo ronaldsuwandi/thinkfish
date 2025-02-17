@@ -13,17 +13,71 @@
     <link rel="stylesheet" href="css/chessboard2-0.5.0.css">
     <link rel="stylesheet" href="css/bootstrap-4.5.2.min.css">
     <style>
-        body { padding: 20px; }
-        .container { display: flex; }
-        .board-container { flex: 2; }
-        .info-container { flex: 1; display: flex; flex-direction: column; }
-        .explanation-box { flex: 1; border: 1px solid #ccc; padding: 10px; overflow-y: auto; max-height: 400px; }
-        .moves-box { flex: 1; border: 1px solid #ccc; padding: 10px; overflow-y: auto; max-height: 400px; }
-        .controls-box { flex: 0.5; display: flex; justify-content: space-around; padding: 10px; }
-        .review-controls { flex: 0; display: flex; justify-content: space-between; padding: 10px; }
-        #pgnInput { width: 100%; padding: 5px; margin-bottom: 10px; }
-        .highlight { background-color: yellow; }
-        .moves-box table tbody td.move:hover:not(.highlight) { cursor: pointer; background-color: #f0f0f0; }
+        body {
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+        }
+
+        .board-container {
+            flex: 2;
+            margin-right: 10px;
+        }
+
+        .info-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .explanation-box {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 400px;
+            margin-top: 10px;
+        }
+
+        .moves-box {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .controls-box {
+            flex: 0.5;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            gap: 5px;
+        }
+
+        .review-controls {
+            flex: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+        }
+
+        #pgnInput {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background-color: yellow;
+        }
+
+        .moves-box table tbody td.move:hover:not(.highlight) {
+            cursor: pointer;
+            background-color: #f0f0f0;
+        }
 
         .controls-box button,
         .review-control button {
@@ -31,6 +85,7 @@
             height: 40px;
             font-size: 16px;
         }
+
         .chessboard-container {
             position: relative;
             display: inline-block;
@@ -56,75 +111,146 @@
             font-weight: bold;
             text-align: center;
         }
+
+        .load-pgn-container {
+            display: flex;
+            justify-content: space-between;
+
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-left: 10px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #28a745; /* Green when active */
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        #modelLabel {
+            min-width: 70px;
+            display: inline-block;
+        }
+        #additionalContext {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Chess Board -->
-        <div class="board-container">
-            <div class="chessboard-container">
-                <!-- File Labels (Bottom) -->
-                <div class="file-labels">
-                    <span>a</span><span>b</span><span>c</span><span>d</span>
-                    <span>e</span><span>f</span><span>g</span><span>h</span>
-                </div>
-
-                <!-- Rank Labels (Left) -->
-                <div class="rank-labels">
-                    <span>8</span><span>7</span><span>6</span><span>5</span>
-                    <span>4</span><span>3</span><span>2</span><span>1</span>
-                </div>
-
-                <div id="board" style="width: 700px;"></div>
-
+<div class="container">
+    <!-- Chess Board -->
+    <div class="board-container">
+        <div class="chessboard-container">
+            <!-- File Labels (Bottom) -->
+            <div class="file-labels">
+                <span>a</span><span>b</span><span>c</span><span>d</span>
+                <span>e</span><span>f</span><span>g</span><span>h</span>
             </div>
 
-            <!-- Graph for evaluation -->
-            <div class="graph-container">
-                <canvas id="evalChart"></canvas>
+            <!-- Rank Labels (Left) -->
+            <div class="rank-labels">
+                <span>8</span><span>7</span><span>6</span><span>5</span>
+                <span>4</span><span>3</span><span>2</span><span>1</span>
             </div>
+
+            <div id="board" style="width: 700px;"></div>
+
         </div>
 
-        <!-- Right Side UI -->
-        <div class="info-container">
-            <!-- Move Explanation -->
-            <textarea id="pgnInput" placeholder="Paste PGN here..."></textarea>
-            <button id="loadPgn" class="btn btn-secondary">Load PGN</button>
-
-            <!-- Move Explanation -->
-            <div class="explanation-box" id="explanation">Move explanation or game review will appear here.</div>
-
-
-            <!-- Move List Table -->
-            <div class="moves-box">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>White</th>
-                            <th>Black</th>
-                        </tr>
-                    </thead>
-                    <tbody id="moves"></tbody>
-                </table>
-            </div>
-
-            <!-- Controls -->
-            <div class="review-controls">
-                <button id="overallReview" class="btn btn-info">Overall Review</button>
-                <button id="whiteReview" class="btn btn-info">White Review</button>
-                <button id="blackReview" class="btn btn-info">Black Review</button>
-            </div>
-
-            <div class="controls-box">
-                <button id="firstMove" class="btn btn-secondary">Beginning</button>
-                <button id="prevMove" class="btn btn-primary">Previous</button>
-                <button id="nextMove" class="btn btn-primary">Next</button>
-                <button id="lastMove" class="btn btn-secondary">End</button>
-                <button id="explainMove" class="btn btn-success">Explain</button>
-            </div>
+        <!-- Graph for evaluation -->
+        <div class="graph-container">
+            <canvas id="evalChart"></canvas>
         </div>
     </div>
+
+    <!-- Right Side UI -->
+    <div class="info-container">
+        <!-- Move Explanation -->
+        <textarea id="pgnInput" placeholder="Paste PGN here..."></textarea>
+        <div class="load-pgn-container">
+            <button id="loadPgn" class="btn btn-secondary">Load PGN</button>
+            <button id="pastePGN" class="btn btn-secondary">Paste and Load PGN</button>
+        </div>
+
+        <textarea id="additionalContext" placeholder="Add additional context here..."></textarea>
+
+        <!-- Move Explanation -->
+        <div class="explanation-box" id="explanation">Move explanation or game review will appear here.</div>
+
+
+        <!-- Move List Table -->
+        <div class="moves-box">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>White</th>
+                    <th>Black</th>
+                </tr>
+                </thead>
+                <tbody id="moves"></tbody>
+            </table>
+        </div>
+
+        <!-- Controls -->
+        <div class="review-controls">
+            <label class="switch-container">
+                <label class="switch">
+                    <input type="checkbox" id="toggleModel">
+                    <span class="slider round"></span>
+                </label>
+                <span id="modelLabel"></span>
+            </label>
+            <button id="overallReview" class="btn btn-info">Overall Review</button>
+            <button id="whiteReview" class="btn btn-info">White Review</button>
+            <button id="blackReview" class="btn btn-info">Black Review</button>
+        </div>
+
+        <div class="controls-box">
+            <button id="firstMove" class="btn btn-secondary">Beginning</button>
+            <button id="prevMove" class="btn btn-primary">Previous</button>
+            <button id="nextMove" class="btn btn-primary">Next</button>
+            <button id="lastMove" class="btn btn-secondary">End</button>
+            <button id="explainMove" class="btn btn-success">Explain</button>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

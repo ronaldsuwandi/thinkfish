@@ -8,8 +8,35 @@ const evaler = new Worker('js/stockfish-16.1.js');
 let moveIndex = 0;
 let moves = [];
 let fens = [];
-let latestScore = 0.0;
+let gameReviewMates = [];
 let evalHistory = [];
+
+const additionalContext = document.getElementById('additionalContext');
+
+const toggleSwitch = document.getElementById("toggleModel");
+const toggleLabel = document.getElementById("modelLabel");
+
+const getModel = () => {
+    return toggleSwitch.checked ? "gpt-4o" : "gpt-4o-mini";
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (toggleSwitch.checked) {
+        toggleLabel.textContent = "4o";
+    } else {
+        toggleLabel.textContent = "4o-mini";
+    }
+
+    toggleSwitch.addEventListener("change", function () {
+        if (toggleSwitch.checked) {
+            toggleLabel.textContent = "4o";
+        } else {
+            toggleLabel.textContent = "4o-mini";
+        }
+    });
+});
+
 
 const ctx = document.getElementById('evalChart').getContext('2d');
 const evalChart = new Chart(ctx, {
@@ -49,15 +76,23 @@ const evalChart = new Chart(ctx, {
         }
     }
 });
+const input = document.getElementById('pgnInput');
 
 document.getElementById('loadPgn').addEventListener('click', loadPgn);
+document.getElementById('pastePGN').addEventListener('click', async () => {
+    input.value = await navigator.clipboard.readText();
+    loadPgn();
+})
 
 function loadPgn() {
-    const input = document.getElementById('pgnInput');
     const pgn = input.value;
     game.loadPgn(pgn);
     moves = game.history({verbose: true});
     moveIndex = 0;
+    bestMoveSequence = [];
+    fens = [];
+    gameReviewMates = [];
+    mate = 0;
     game.reset();
     board.position(game.fen());
     input.value = '';
@@ -69,8 +104,6 @@ function loadPgn() {
         fens.push(game.fen());
     }
     game.reset();
-
-
     renderMoveList();
     analyzeFullGameBatch();
 }
@@ -98,6 +131,7 @@ function analyzeFullGameBatch() {
     for (let pos of positions) {
         evaler.postMessage(pos);
         evaler.postMessage('eval');
+        evaler.postMessage('go depth 2'); // to check for imminent mate
     }
     game.reset();
 
@@ -112,6 +146,8 @@ function analyzeFullGameBatch() {
 
 }
 
+
+let gameReviewMateEntry;
 
 evaler.onmessage = function (event) {
     if (event.data.includes("Final evaluation")) {
@@ -135,6 +171,22 @@ evaler.onmessage = function (event) {
         evalChart.data.datasets[0].data.push(evalScore);
         evalChart.update();
         lastEval++;
+    }
+
+    if (event.data.startsWith('info depth 2')) {
+        let mateMatch = event.data.match('mate (-?\\d+)');
+        let reviewMate = 0;
+        if (mateMatch) {
+            reviewMate = parseInt(mateMatch[1])
+        } else {
+            reviewMate = 0;
+        }
+        gameReviewMateEntry = reviewMate;
+    }
+    if (event.data.startsWith('bestmove')) {
+        // go depth has completed, finalised it
+        gameReviewMates.push(gameReviewMateEntry);
+        gameReviewMateEntry = 0;
     }
 };
 
@@ -261,10 +313,17 @@ function analyzePosition() {
 let bestMoveUCI;
 
 let bestMoveSequence = [];
+let mate = 0;
 
 stockfish.onmessage = function (event) {
     if (event.data.startsWith('info depth 20')) {
         bestMoveSequence = event.data.split(" pv ")[1].split(" ");
+        let mateMatch = event.data.match('mate (-?\\d+)');
+        if (mateMatch) {
+            mate = parseInt(mateMatch[1])
+        } else {
+            mate = 0;
+        }
     }
     if (event.data.startsWith('bestmove')) {
         bestMoveUCI = event.data.split(' ')[1];
@@ -339,6 +398,12 @@ const explainCallback = async (reviewType) => {
         return;
     }
 
+    // game review mates and fens will have extra item (at start)
+    if (moves.length !== gameReviewMates.length-1) {
+        alert('Stockfish has not fully evaluate the game');
+        return;
+    }
+
     try {
         // Show loading state
         enableLLMButtons(false);
@@ -351,8 +416,10 @@ const explainCallback = async (reviewType) => {
                 before_fen: moves[i].before,
                 after_fen: moves[i].after,
                 evalScore: evalHistory[i+1],
+                mate: gameReviewMates[i+1],
             })
         }
+
 
         const response = await fetchWithTimeout('/api/review', {
             method: 'POST',
@@ -360,6 +427,8 @@ const explainCallback = async (reviewType) => {
             body: JSON.stringify({
                 reviewType,
                 moves: body,
+                model: getModel(),
+                additionalContext: additionalContext.value,
             })
         }, 45000);
 
@@ -431,8 +500,6 @@ explainButton.addEventListener('click', async () => {
     }
 
 
-
-
     try {
         // Show loading state
         enableLLMButtons(false);
@@ -441,10 +508,13 @@ explainButton.addEventListener('click', async () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                model: getModel(),
                 fen,
                 move,
+                mate,
                 bestMove: bestMovesPgn[0],
                 continuation: bestMovesPgn,
+                additionalContext: additionalContext.value,
             })
         }, 45000);
 
